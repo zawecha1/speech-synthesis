@@ -1,7 +1,7 @@
 {
   "@type": "EmotionProsody",
-  "id": "sad",
-  "name": "Sad",
+  "id": "sadness",
+  "name": "Sadness",
   "firstWord": {
     "firstSyllable": {
       "consonant1Duration": -25,

@@ -2,6 +2,15 @@
 
 Text-to-Speech handler for Lumen Robot Friend with expressive intonation support.
 
+## eSpeak
+
+Setelah install eSpeak, tambahkan `C:\Program Files (x86)\eSpeak\command_line` ke environment `PATH`.
+
+Test: Jalankan Command Prompt, lalu pastikan perintah berikut berhasil:
+
+    espeak "Hello world"
+    espeak -v mb-id1 "Apa kabar?"
+
 ## Langkah2 Install TTS Salita (v1.0)
 
 1. buat folder `OUTPUT-PHO` di `C:`
