@@ -53,10 +53,10 @@ public class SpeechExpressionRouter extends RouteBuilder {
                             exchange.getIn().getBody(byte[].class), LumenThing.class);
                     if (thing instanceof CommunicateAction) {
                         final CommunicateAction communicateAction = (CommunicateAction) thing;
-                        log.info("Got speech: {}", communicateAction);
+                        final Locale lang = Optional.ofNullable(communicateAction.getInLanguage()).orElse(Locale.US);
+                        log.info("Got speech lang-legacy={}: {}", lang.getLanguage(), communicateAction);
                         final String avatarId = Optional.ofNullable(communicateAction.getAvatarId()).orElse("nao1");
 
-                        final Locale lang = Optional.ofNullable(communicateAction.getInLanguage()).orElse(Locale.US);
                         final File wavFile = File.createTempFile("lumen-speech-expression_", ".wav");
                         final File oggFile = File.createTempFile("lumen-speech-expression_", ".ogg");
                         try {
