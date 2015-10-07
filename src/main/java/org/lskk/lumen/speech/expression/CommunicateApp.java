@@ -60,9 +60,14 @@ public class CommunicateApp implements CommandLineRunner {
         final CommunicateAction communicateAction = new CommunicateAction();
         communicateAction.setInLanguage(
                 Optional.ofNullable(params.inLanguage).map(Locale::forLanguageTag).orElse(Locale.US));
-        communicateAction.setAvatarId(Optional.ofNullable(params.avatarId).orElse("nao1")); // TODO: parameterizable
+        communicateAction.setAvatarId(Optional.ofNullable(params.avatarId).orElse("nao1"));
         communicateAction.setEmotionKind(params.emotion);
         communicateAction.setObject(Joiner.on(' ').join(params.objects));
+        // TODO: fix this!
+        if ("ar-SA".equals(params.inLanguage)) {
+            //" اَلسَّلَامُ عَلَيْكُمْ"
+            communicateAction.setObject(" اَلسَّلَامُ عَلَيْكُمْ");
+        }
         final String speechExpressionUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=lumen.speech.expression";
         log.info("Sending {} to {} ...", communicateAction, speechExpressionUri);
         producer.sendBody(speechExpressionUri, toJson.mapper.writeValueAsBytes(communicateAction));

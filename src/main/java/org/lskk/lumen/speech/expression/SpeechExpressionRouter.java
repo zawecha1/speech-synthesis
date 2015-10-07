@@ -51,9 +51,14 @@ public class SpeechExpressionRouter extends RouteBuilder {
                         final Locale lang = Optional.ofNullable(communicateAction.getInLanguage()).orElse(Locale.US);
                         try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                             final CommandLine cmdLine = new CommandLine("espeak");
+                            cmdLine.addArgument("-s");
+                            cmdLine.addArgument("130");
                             if ("in".equals(lang.getLanguage())) {
                                 cmdLine.addArgument("-v");
                                 cmdLine.addArgument("mb-id1");
+                            } else if ("ar".equals(lang.getLanguage())) {
+                                cmdLine.addArgument("-v");
+                                cmdLine.addArgument("mb-ar1");
                             }
                             cmdLine.addArgument(communicateAction.getObject());
                             executor.setStreamHandler(new PumpStreamHandler(bos));
