@@ -13,10 +13,6 @@ public class SpeechExpressionApp implements CommandLineRunner {
 
     private static Logger log = LoggerFactory.getLogger(SpeechExpressionApp.class);
 
-    static {
-        log.info("java.library.path = {}", System.getProperty("java.library.path"));
-    }
-
     public static void main(String[] args) {
         new SpringApplicationBuilder(SpeechExpressionApp.class)
                 .profiles("speechExpressionApp")
