@@ -1,10 +1,17 @@
 package org.lskk.lumen.speech.expression;
 
+import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.language.HeaderExpression;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.joda.time.DateTime;
+import org.lskk.lumen.core.AudioObject;
 import org.lskk.lumen.core.CommunicateAction;
 import org.lskk.lumen.core.LumenThing;
 import org.slf4j.Logger;
@@ -47,29 +54,93 @@ public class SpeechExpressionRouter extends RouteBuilder {
                     if (thing instanceof CommunicateAction) {
                         final CommunicateAction communicateAction = (CommunicateAction) thing;
                         log.info("Got speech: {}", communicateAction);
-                        // TODO: implement
+                        final String avatarId = Optional.ofNullable(communicateAction.getAvatarId()).orElse("nao1");
+
                         final Locale lang = Optional.ofNullable(communicateAction.getInLanguage()).orElse(Locale.US);
-                        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                            final CommandLine cmdLine = new CommandLine("espeak");
-                            cmdLine.addArgument("-s");
-                            cmdLine.addArgument("130");
-                            if ("in".equals(lang.getLanguage())) {
-                                cmdLine.addArgument("-v");
-                                cmdLine.addArgument("mb-id1");
-                            } else if ("ar".equals(lang.getLanguage())) {
-                                cmdLine.addArgument("-v");
-                                cmdLine.addArgument("mb-ar1");
+                        final File wavFile = File.createTempFile("lumen-speech-expression_", ".wav");
+                        final File oggFile = File.createTempFile("lumen-speech-expression_", ".ogg");
+                        try {
+
+                            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                                final CommandLine cmdLine = new CommandLine("espeak");
+                                cmdLine.addArgument("-s");
+                                cmdLine.addArgument("130");
+                                if ("in".equals(lang.getLanguage())) {
+                                    cmdLine.addArgument("-v");
+                                    cmdLine.addArgument("mb-id1");
+                                } else if ("ar".equals(lang.getLanguage())) {
+                                    cmdLine.addArgument("-v");
+                                    cmdLine.addArgument("mb-ar1");
+                                }
+                                cmdLine.addArgument("-w");
+                                cmdLine.addArgument(wavFile.toString());
+                                cmdLine.addArgument(communicateAction.getObject());
+                                executor.setStreamHandler(new PumpStreamHandler(bos));
+                                final int executed;
+                                try {
+                                    executed = executor.execute(cmdLine);
+                                } finally {
+                                    log.info("{}: {}", cmdLine, bos.toString());
+                                }
                             }
-                            cmdLine.addArgument(communicateAction.getObject());
-                            executor.setStreamHandler(new PumpStreamHandler(bos));
-                            final int executed;
-                            try {
-                                executed = executor.execute(cmdLine);
-                            } finally {
-                                log.info("{}: {}", cmdLine, bos.toString());
+
+                            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                                // flac.exe doesn't support mp3, and that's a problem for now (note: mp3 patent is expiring)
+                                final CommandLine cmdLine = new CommandLine(ffmpegExecutable);
+                                cmdLine.addArgument("-i");
+                                cmdLine.addArgument(wavFile.toString());
+                                cmdLine.addArgument("-ar");
+                                cmdLine.addArgument(String.valueOf(SAMPLE_RATE));
+                                cmdLine.addArgument("-ac");
+                                cmdLine.addArgument("1");
+                                cmdLine.addArgument("-y"); // happens, weird!
+                                cmdLine.addArgument(oggFile.toString());
+                                executor.setStreamHandler(new PumpStreamHandler(bos));
+                                final int executed;
+                                try {
+                                    executed = executor.execute(cmdLine);
+                                } finally {
+                                    log.info("{}: {}", cmdLine, bos.toString());
+                                }
+                                Preconditions.checkState(oggFile.exists(), "Cannot convert %s to OGG %s",
+                                        wavFile, oggFile);
+
+                                // Send
+                                final byte[] audioContent = FileUtils.readFileToByteArray(oggFile);
+                                final String audioContentType = "audio/ogg";
+
+                                final AudioObject audioObject = new AudioObject();
+                                audioObject.setContentType(audioContentType + "; rate=" + SAMPLE_RATE);
+                                audioObject.setContentUrl("data:" + audioContentType + ";base64," + Base64.encodeBase64String(audioContent));
+                                audioObject.setContentSize((long) audioContent.length);
+                                audioObject.setName(FilenameUtils.getName(oggFile.getName()));
+                                audioObject.setDateCreated(new DateTime());
+                                audioObject.setDatePublished(audioObject.getDateCreated());
+                                audioObject.setDateModified(audioObject.getDateCreated());
+                                audioObject.setUploadDate(audioObject.getDateCreated());
+                                final String audioOutUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=avatar." + avatarId + ".audio.out";
+                                log.info("Sending {} to {} ...", audioObject, audioOutUri);
+                                producer.sendBody(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject));
                             }
+                        } finally {
+                            oggFile.delete();
+                            wavFile.delete();
+                        }
+
+                        // reply
+                        exchange.getOut().setBody("{}");
+                        final String replyTo = exchange.getIn().getHeader("rabbitmq.REPLY_TO", String.class);
+                        if (replyTo != null) {
+                            log.debug("Sending reply to {} ...", replyTo);
+                            exchange.getOut().setHeader("rabbitmq.ROUTING_KEY", replyTo);
+                            exchange.getOut().setHeader("rabbitmq.EXCHANGE_NAME", "");
+                            exchange.getOut().setHeader("recipients",
+                                    "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&autoDelete=false,log:OUT.lumen.speech.expression");
+                        } else {
+                            exchange.getOut().setHeader("recipients", "log:OUT.lumen.speech.expression");
                         }
                     }
-                });
+                })
+                .routingSlip(new HeaderExpression("recipients"));
     }
 }
