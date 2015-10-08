@@ -65,10 +65,9 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                         try {
                             final byte[] wavBytes;
                             try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
-                                 final ByteArrayOutputStream wavStrean = new ByteArrayOutputStream();
+                                 final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
                                  final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
                                 final CommandLine cmdLine = new CommandLine("espeak");
-                                cmdLine.addArgument("--stdin");
                                 cmdLine.addArgument("-b");
                                 cmdLine.addArgument("1"); // UTF-8
                                 cmdLine.addArgument("-m"); // SSML markup
@@ -76,20 +75,21 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                 cmdLine.addArgument("130");
                                 if ("in".equals(lang.getLanguage())) {
                                     cmdLine.addArgument("-v");
-                                    cmdLine.addArgument("mb-id1");
+                                    cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
                                 } else if ("ar".equals(lang.getLanguage())) {
                                     cmdLine.addArgument("-v");
-                                    cmdLine.addArgument("mb-ar1");
+                                    cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
                                 }
 //                                cmdLine.addArgument("-w");
 //                                cmdLine.addArgument(wavFile.toString());
+                                cmdLine.addArgument("--stdin");
                                 cmdLine.addArgument("--stdout");
-                                cmdLine.addArgument(communicateAction.getObject());
-                                executor.setStreamHandler(new PumpStreamHandler(wavStrean, err, objectIn));
+                                //cmdLine.addArgument(communicateAction.getObject());
+                                executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
                                 final int executed;
                                 try {
                                     executed = executor.execute(cmdLine);
-                                    wavBytes = wavStrean.toByteArray();
+                                    wavBytes = wavStream.toByteArray();
                                 } finally {
                                     log.info("{}: {}", cmdLine, err.toString());
                                 }

@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
 import org.lskk.lumen.core.CommunicateAction;
 import org.lskk.lumen.core.EmotionKind;
+import org.lskk.lumen.core.Gender;
 import org.lskk.lumen.core.LumenChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class CommunicateApp implements CommandLineRunner {
                 Optional.ofNullable(params.inLanguage).map(Locale::forLanguageTag).orElse(Locale.US));
         communicateAction.setAvatarId(Optional.ofNullable(params.avatarId).orElse("nao1"));
         communicateAction.setEmotionKind(params.emotion);
+        communicateAction.setGender(params.gender);
         communicateAction.setObject(Joiner.on(' ').join(params.objects));
         // TODO: fix this!
         if ("ar-SA".equals(params.inLanguage)) {
@@ -73,10 +75,12 @@ public class CommunicateApp implements CommandLineRunner {
 
         @Parameter(names = "-l", description = "Language code, e.g. id-ID")
         private String inLanguage;
-        @Parameter(names = "-e", description = "Emotion, e.g. SADNESS")
+        @Parameter(names = "-e", description = "Emotion kind, e.g. SADNESS")
         private EmotionKind emotion;
         @Parameter(names = "-a", description = "Avatar ID, e.g. nao1")
         private String avatarId;
+        @Parameter(names = "-a", description = "Gender: MALE | FEMALE")
+        private Gender gender;
         @Parameter(description = "Message to say.")
         private List<String> objects = new ArrayList<>();
     }

@@ -29,7 +29,7 @@ public class EmotionProsodies {
     @PostConstruct
     public void init() throws IOException {
         final Resource[] resources = new PathMatchingResourcePatternResolver(EmotionProsodies.class.getClassLoader())
-                .getResources("classpath:org/lskk/lumen/speech/synthesis/*.jsonld");
+                .getResources("classpath:org/lskk/lumen/speech/synthesis/*.json");
         for (Resource res : resources) {
             final EmotionProsody emotionProsody = toJson.getMapper().readValue(res.getURL(), EmotionProsody.class);
             final EmotionKind emotionKind = EmotionKind.valueOf(emotionProsody.getId().toUpperCase());
