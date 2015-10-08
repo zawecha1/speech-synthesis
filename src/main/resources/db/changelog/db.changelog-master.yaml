@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: ceefour
+      changes:
+        - loadData:
+            file: org/lskk/lumen/speech/synthesis/knownword.csv
+            tableName: knownword
