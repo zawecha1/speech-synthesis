@@ -1,4 +1,4 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
@@ -13,6 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import org.lskk.lumen.core.AudioObject;
 import org.lskk.lumen.core.CommunicateAction;
+import org.lskk.lumen.core.LumenChannel;
 import org.lskk.lumen.core.LumenThing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,18 +22,20 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 
 @Component
-@Profile("speechExpressionApp")
-public class SpeechExpressionRouter extends RouteBuilder {
+@Profile("speechSynthesisApp")
+public class SpeechSynthesisRouter extends RouteBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(SpeechExpressionRouter.class);
+    private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     public static final int SAMPLE_RATE = 16000;
-    public static final String FLAC_TYPE = "audio/x-flac";
     private static final DefaultExecutor executor = new DefaultExecutor();
 
     @Inject
@@ -46,8 +49,8 @@ public class SpeechExpressionRouter extends RouteBuilder {
     public void configure() throws Exception {
         final String ffmpegExecutable = !new File("/usr/bin/ffmpeg").exists() && new File("/usr/bin/avconv").exists() ? "avconv" : "ffmpeg";
         log.info("libav autodetection result: We will use '{}'", ffmpegExecutable);
-        from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=lumen.speech.expression")
-                .to("log:IN.lumen.speech.expression?showHeaders=true&showAll=true&multiline=true")
+        from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key())
+                .to("log:IN." + LumenChannel.SPEECH_SYNTHESIS.key() + "?showHeaders=true&showAll=true&multiline=true")
                 .process(exchange -> {
                     final LumenThing thing = toJson.getMapper().readValue(
                             exchange.getIn().getBody(byte[].class), LumenThing.class);
@@ -57,12 +60,18 @@ public class SpeechExpressionRouter extends RouteBuilder {
                         log.info("Got speech lang-legacy={}: {}", lang.getLanguage(), communicateAction);
                         final String avatarId = Optional.ofNullable(communicateAction.getAvatarId()).orElse("nao1");
 
-                        final File wavFile = File.createTempFile("lumen-speech-expression_", ".wav");
-                        final File oggFile = File.createTempFile("lumen-speech-expression_", ".ogg");
+                        //final File wavFile = File.createTempFile("lumen-speech-synthesis_", ".wav");
+//                        final File oggFile = File.createTempFile("lumen-speech-synthesis_", ".ogg");
                         try {
-
-                            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                            final byte[] wavBytes;
+                            try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
+                                 final ByteArrayOutputStream wavStrean = new ByteArrayOutputStream();
+                                 final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
                                 final CommandLine cmdLine = new CommandLine("espeak");
+                                cmdLine.addArgument("--stdin");
+                                cmdLine.addArgument("-b");
+                                cmdLine.addArgument("1"); // UTF-8
+                                cmdLine.addArgument("-m"); // SSML markup
                                 cmdLine.addArgument("-s");
                                 cmdLine.addArgument("130");
                                 if ("in".equals(lang.getLanguage())) {
@@ -72,48 +81,57 @@ public class SpeechExpressionRouter extends RouteBuilder {
                                     cmdLine.addArgument("-v");
                                     cmdLine.addArgument("mb-ar1");
                                 }
-                                cmdLine.addArgument("-w");
-                                cmdLine.addArgument(wavFile.toString());
+//                                cmdLine.addArgument("-w");
+//                                cmdLine.addArgument(wavFile.toString());
+                                cmdLine.addArgument("--stdout");
                                 cmdLine.addArgument(communicateAction.getObject());
-                                executor.setStreamHandler(new PumpStreamHandler(bos));
+                                executor.setStreamHandler(new PumpStreamHandler(wavStrean, err, objectIn));
                                 final int executed;
                                 try {
                                     executed = executor.execute(cmdLine);
+                                    wavBytes = wavStrean.toByteArray();
                                 } finally {
-                                    log.info("{}: {}", cmdLine, bos.toString());
+                                    log.info("{}: {}", cmdLine, err.toString());
                                 }
                             }
 
-                            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                            try (final ByteArrayInputStream wavIn = new ByteArrayInputStream(wavBytes);
+                                 final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                 final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
                                 // flac.exe doesn't support mp3, and that's a problem for now (note: mp3 patent is expiring)
                                 final CommandLine cmdLine = new CommandLine(ffmpegExecutable);
                                 cmdLine.addArgument("-i");
-                                cmdLine.addArgument(wavFile.toString());
+                                cmdLine.addArgument("-"); //cmdLine.addArgument(wavFile.toString());
                                 cmdLine.addArgument("-ar");
                                 cmdLine.addArgument(String.valueOf(SAMPLE_RATE));
                                 cmdLine.addArgument("-ac");
                                 cmdLine.addArgument("1");
-                                cmdLine.addArgument("-y"); // happens, weird!
-                                cmdLine.addArgument(oggFile.toString());
-                                executor.setStreamHandler(new PumpStreamHandler(bos));
+                                cmdLine.addArgument("-f");
+                                cmdLine.addArgument("ogg");
+//                                cmdLine.addArgument("-y"); // happens, weird!
+//                                cmdLine.addArgument(oggFile.toString());
+                                cmdLine.addArgument("-");
+                                executor.setStreamHandler(new PumpStreamHandler(bos, err, wavIn));
                                 final int executed;
                                 try {
                                     executed = executor.execute(cmdLine);
                                 } finally {
-                                    log.info("{}: {}", cmdLine, bos.toString());
+                                    log.info("{}: {}", cmdLine, err.toString());
                                 }
-                                Preconditions.checkState(oggFile.exists(), "Cannot convert %s to OGG %s",
-                                        wavFile, oggFile);
+//                                Preconditions.checkState(oggFile.exists(), "Cannot convert %s bytes WAV to OGG",
+//                                        wavBytes.length);
 
                                 // Send
-                                final byte[] audioContent = FileUtils.readFileToByteArray(oggFile);
+//                                final byte[] audioContent = FileUtils.readFileToByteArray(oggFile);
+                                final byte[] audioContent = bos.toByteArray();
                                 final String audioContentType = "audio/ogg";
 
                                 final AudioObject audioObject = new AudioObject();
                                 audioObject.setContentType(audioContentType + "; rate=" + SAMPLE_RATE);
                                 audioObject.setContentUrl("data:" + audioContentType + ";base64," + Base64.encodeBase64String(audioContent));
                                 audioObject.setContentSize((long) audioContent.length);
-                                audioObject.setName(FilenameUtils.getName(oggFile.getName()));
+//                                audioObject.setName(FilenameUtils.getName(oggFile.getName()));
+                                audioObject.setName("lumen-speech-" + new DateTime() + ".ogg");
                                 audioObject.setDateCreated(new DateTime());
                                 audioObject.setDatePublished(audioObject.getDateCreated());
                                 audioObject.setDateModified(audioObject.getDateCreated());
@@ -123,8 +141,8 @@ public class SpeechExpressionRouter extends RouteBuilder {
                                 producer.sendBody(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject));
                             }
                         } finally {
-                            oggFile.delete();
-                            wavFile.delete();
+//                            oggFile.delete();
+                            //wavFile.delete();
                         }
 
                         // reply
@@ -135,9 +153,9 @@ public class SpeechExpressionRouter extends RouteBuilder {
                             exchange.getOut().setHeader("rabbitmq.ROUTING_KEY", replyTo);
                             exchange.getOut().setHeader("rabbitmq.EXCHANGE_NAME", "");
                             exchange.getOut().setHeader("recipients",
-                                    "rabbitmq://dummy/dummy?connectionFactory=#amqpConnFactory&autoDelete=false,log:OUT.lumen.speech.expression");
+                                    "rabbitmq://dummy/dummy?connectionFactory=#amqpConnFactory&autoDelete=false,log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
                         } else {
-                            exchange.getOut().setHeader("recipients", "log:OUT.lumen.speech.expression");
+                            exchange.getOut().setHeader("recipients", "log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
                         }
                     }
                 })

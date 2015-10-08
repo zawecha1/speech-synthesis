@@ -1,4 +1,4 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -6,13 +6,9 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.joda.time.DateTime;
-import org.lskk.lumen.core.AudioObject;
 import org.lskk.lumen.core.CommunicateAction;
 import org.lskk.lumen.core.EmotionKind;
+import org.lskk.lumen.core.LumenChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -23,8 +19,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
 
 import javax.inject.Inject;
-import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -68,13 +62,13 @@ public class CommunicateApp implements CommandLineRunner {
             //" اَلسَّلَامُ عَلَيْكُمْ"
             communicateAction.setObject(" اَلسَّلَامُ عَلَيْكُمْ");
         }
-        final String speechExpressionUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=lumen.speech.expression";
-        log.info("Sending {} to {} ...", communicateAction, speechExpressionUri);
-        producer.sendBody(speechExpressionUri, toJson.mapper.writeValueAsBytes(communicateAction));
+        final String speechSynthesisUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key();
+        log.info("Sending {} to {} ...", communicateAction, speechSynthesisUri);
+        producer.sendBody(speechSynthesisUri, toJson.mapper.writeValueAsBytes(communicateAction));
         SpringApplication.exit(appCtx);
     }
 
-    @Parameters(commandDescription = "Sends CommunicateAction object to lumen.speech.expression.")
+    @Parameters(commandDescription = "Sends CommunicateAction object to lumen.speech.synthesis.")
     private static class CommunicateParams {
 
         @Parameter(names = "-l", description = "Language code, e.g. id-ID")

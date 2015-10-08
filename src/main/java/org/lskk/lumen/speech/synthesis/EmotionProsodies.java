@@ -1,4 +1,4 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import org.lskk.lumen.core.EmotionKind;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class EmotionProsodies {
     @PostConstruct
     public void init() throws IOException {
         final Resource[] resources = new PathMatchingResourcePatternResolver(EmotionProsodies.class.getClassLoader())
-                .getResources("classpath:org/lskk/lumen/speech/expression/*.jsonld");
+                .getResources("classpath:org/lskk/lumen/speech/synthesis/*.jsonld");
         for (Resource res : resources) {
             final EmotionProsody emotionProsody = toJson.getMapper().readValue(res.getURL(), EmotionProsody.class);
             final EmotionKind emotionKind = EmotionKind.valueOf(emotionProsody.getId().toUpperCase());

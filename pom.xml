@@ -8,7 +8,7 @@
 	<version>2.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Lumen Speech Expression</name>
+	<name>Lumen Speech Synthesis</name>
 	<description>Text-to-Speech handler for Lumen Robot Friend with expressive intonation support</description>
 
 	<parent>
@@ -20,7 +20,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<start-class>org.lskk.lumen.speech.expression.SpeechExpressionApp</start-class>
+		<start-class>org.lskk.lumen.speech.synthesis.SpeechSynthesisApp</start-class>
 		<java.version>1.8</java.version>
 	</properties>
 

@@ -1,4 +1,4 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,14 +8,14 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Profile;
 
 @SpringBootApplication
-@Profile("speechExpressionApp")
-public class SpeechExpressionApp implements CommandLineRunner {
+@Profile("speechSynthesisApp")
+public class SpeechSynthesisApp implements CommandLineRunner {
 
-    private static Logger log = LoggerFactory.getLogger(SpeechExpressionApp.class);
+    private static Logger log = LoggerFactory.getLogger(SpeechSynthesisApp.class);
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(SpeechExpressionApp.class)
-                .profiles("speechExpressionApp")
+        new SpringApplicationBuilder(SpeechSynthesisApp.class)
+                .profiles("speechSynthesisApp")
                 .run(args);
     }
 
