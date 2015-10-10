@@ -67,11 +67,16 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 //                        final File oggFile = File.createTempFile("lumen-speech-synthesis_", ".ogg");
                         try {
                             final byte[] wavBytes;
-                            if ("in".equals(lang.getLanguage()) && EmotionKind.NEUTRAL != emotionKind) {
+                            if ("in".equals(lang.getLanguage())) {
                                 // Expressive speech (for now, Indonesian only)
-                                final EmotionProsody emotionProsody = emotionProsodies.getEmotion(emotionKind)
-                                        .orElseThrow(() -> new SpeechSynthesisException("Emotion " + emotionKind + " not supported"));
-                                final PhonemeDoc phonemeDoc = speechProsody.perform(communicateAction.getObject(), emotionProsody);
+                                final PhonemeDoc phonemeDoc;
+                                if (EmotionKind.NEUTRAL == emotionKind) {
+                                    phonemeDoc = speechProsody.performNeutral(communicateAction.getObject());
+                                } else {
+                                    final EmotionProsody emotionProsody = emotionProsodies.getEmotion(emotionKind)
+                                            .orElseThrow(() -> new SpeechSynthesisException("Emotion " + emotionKind + " not supported"));
+                                    phonemeDoc = speechProsody.perform(communicateAction.getObject(), emotionProsody);
+                                }
 
                                 try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(phonemeDoc.toString().getBytes(StandardCharsets.UTF_8));
                                      final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
@@ -79,7 +84,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                     final CommandLine cmdLine = new CommandLine("mbrola");
                                     cmdLine.addArgument(new File(mbrolaShareFolder, "id1/id1").toString());
                                     cmdLine.addArgument("-");
-                                    cmdLine.addArgument("-");
+                                    cmdLine.addArgument("-.wav");
                                     executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
                                     final int executed;
                                     try {
@@ -123,6 +128,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                 }
                             }
 
+                            log.info("espeak/mbrola generated {} bytes WAV", wavBytes.length);
                             try (final ByteArrayInputStream wavIn = new ByteArrayInputStream(wavBytes);
                                  final ByteArrayOutputStream bos = new ByteArrayOutputStream();
                                  final ByteArrayOutputStream err = new ByteArrayOutputStream()) {

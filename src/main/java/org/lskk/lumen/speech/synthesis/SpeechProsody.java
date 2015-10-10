@@ -93,8 +93,8 @@ public class SpeechProsody {
             cmdLine.addArgument("-b");
             cmdLine.addArgument("1"); // UTF-8
             cmdLine.addArgument("-m"); // SSML markup
-//            cmdLine.addArgument("-s");
-//            cmdLine.addArgument("130");
+            cmdLine.addArgument("-s");
+            cmdLine.addArgument("130");
             cmdLine.addArgument("-v");
             cmdLine.addArgument(voiceId);
             cmdLine.addArgument("-q");
@@ -128,6 +128,13 @@ public class SpeechProsody {
         final List<ExpressiveWord> expressiveWords = searchSampaSyllable(words);
         applyEmotion(expressiveWords, emotionProsody, phonemeDoc);
         log.info("Expressive phonemes for '{}' using {}: {}", sentence, emotionProsody.getId(), phonemeDoc);
+        return phonemeDoc;
+    }
+
+    public PhonemeDoc performNeutral(String sentence) {
+        final String result = createPho(sentence, MBROLA_ID1_VOICE);
+        final PhonemeDoc phonemeDoc = insertPho(result);
+        log.info("Original/neutral phonemes for '{}': {}", sentence, phonemeDoc);
         return phonemeDoc;
     }
 
@@ -166,8 +173,12 @@ public class SpeechProsody {
                 final List<String> letters = Splitter.on('.').splitToList(syllableSampa);
                 for (final String letter : letters) {
                     // get the phoneme
-                    while (letter.equals(phonemeDoc.getPhonemes().get(phonemeIdx))) {
+                    while (!letter.equals(phonemeDoc.getPhonemes().get(phonemeIdx).getSampa())) {
                         phonemeIdx++;
+                        if (phonemeIdx >= phonemeDoc.getPhonemes().size()) {
+                            throw new SpeechSynthesisException(String.format("For phoneme '%s' in word '%s', syllable SAMPAs '%s' does not match phonemes: %s",
+                                    letter, expressiveWord.getWord(), syllableSampas, phonemeDoc));
+                        }
                     }
                     final Phoneme phoneme = phonemeDoc.getPhonemes().get(phonemeIdx);
 
