@@ -280,8 +280,6 @@ id,word,syllables,sampa,syllablesSampa
 279,pintu,pin-tu,pIntU,p.I.n-t.U
 280,tenang,te-nang,tenVN,t.e-n.V.N
 281,bermain,ber-ma-in,bermaIn,b.e.r-m.a-I.n
-282,dapat,da-pat,dVpVt,d.V-p.V.t
-283,kan,kan,kVn,k.V.n
 284,mata,ma-ta,mVtV,m.V-t.V
 285,no,no,nQ,n.Q
 286,selesai,se-le-sai,s@lesaI,s.@-l.e-s.a.I
@@ -378,8 +376,6 @@ id,word,syllables,sampa,syllablesSampa
 377,harga,har-ga,hVrgV,h.V.r-g.V
 378,raja,ra-ja,rVdZV,r.V-dZ.V
 379,laut,la-ut,laUt,l.a-U.t
-380,dari,da-ri,dVrI,d.V-r.I
-381,pada,pa-da,pVdV,p.V-d.V
 382,bangun,ba-ngin,bVNUn,b.V-N.U.n
 383,persen,per-sen,pers@n,p.e.r-s.@.n
 384,silakan,si-la-kan,sIlVkVn,s.I-l.V-k.V.n
@@ -586,8 +582,6 @@ id,word,syllables,sampa,syllablesSampa
 585,manis,ma-nis,mVnIs,m.V-n.I.s
 586,detik,de-tik,detIk,d.e-t.I.k
 587,nilai,ni-lai,nIlaI,n.I-l.aI
-588,sedang,se-dang,sedVN,s.e-d.V.N
-589,kan,kan,kVn,k.V.n
 590,adanya,a-da-nya,VdVnYV,V-d.V-nY.V
 591,lokasi,lo-ka-si,lQkVsI,l.Q-k.V-s.I
 592,tertawa,ter-ta-wa,t@rtVwV,t.@.r-t.V-w.V
@@ -1228,8 +1222,6 @@ id,word,syllables,sampa,syllablesSampa
 1227,menolong,me-no-long,m@nQlQN,m.@-n.Q-l.Q.N
 1228,tenggelam,teng-ge-lam,t@NgelVm,t.@.N-g.e-l.V.m
 1229,kok,kok,kQk,k.Q.k
-1230,sebagai,se-ba-gai,s@bVgaI,s.@-b.V-g.aI
-1231,mana,ma-na,mVnV,m.V-n.V
 1232,mahal,ma-hal,mVhVl,m.V-h.V.l
 1233,mengurus,meng-u-rus,m@NUrUs,m.@.N-U-r.U.s
 1234,taruh,ta-ruh,tVrUh,t.V-r.U.h

@@ -8,7 +8,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(name = "uk_wordwithsampa_word", columnNames = "word")
+        @UniqueConstraint(name = "uk_knownword_word", columnNames = "word")
 })
 public class KnownWord implements Serializable {
 

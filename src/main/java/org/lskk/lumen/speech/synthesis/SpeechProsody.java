@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,14 +109,13 @@ public class SpeechProsody {
         return phoStr;
     }
 
-    protected int insertPho(String sentence) {
-        // TODO: implement
-        throw new UnsupportedOperationException();
+    protected PhonemeDoc insertPho(String pho) {
+        return PhonemeDoc.fromPho(pho);
     }
 
-    public Pho perform(String sentence, EmotionProsody emotionProsody) {
+    public PhonemeDoc perform(String sentence, EmotionProsody emotionProsody) {
         final String result = createPho(sentence, MBROLA_ID1_VOICE);
-        int totalId = insertPho(result);
+        final PhonemeDoc phonemeDoc = insertPho(result);
         final List<String> words = Splitter.on(' ').omitEmptyStrings().splitToList(sentence);
         final List<ExpressiveWord> expressiveWords = searchSampaSyllable(words);
         applyEmotion(expressiveWords, emotionProsody);

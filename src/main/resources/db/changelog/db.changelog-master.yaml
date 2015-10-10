@@ -3,6 +3,41 @@ databaseChangeLog:
       id: 1
       author: ceefour
       changes:
+        - createTable:
+            tableName: knownword
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: word
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_knownword_word
+              - column:
+                  name: syllables
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sampa
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: syllablesSampa
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 2
+      author: ceefour
+      changes:
         - loadData:
             file: org/lskk/lumen/speech/synthesis/knownword.csv
             tableName: knownword
