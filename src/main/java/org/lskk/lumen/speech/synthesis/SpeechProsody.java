@@ -97,6 +97,7 @@ public class SpeechProsody {
 //            cmdLine.addArgument("130");
             cmdLine.addArgument("-v");
             cmdLine.addArgument(voiceId);
+            cmdLine.addArgument("-q");
             cmdLine.addArgument("--pho");
             cmdLine.addArgument("--stdin");
             cmdLine.addArgument("--stdout");
@@ -204,8 +205,9 @@ public class SpeechProsody {
 
     protected List<ExpressiveWord> searchSampaSyllable(List<String> words) {
         return words.stream().map(it -> {
-            final KnownWord knownWord = Preconditions.checkNotNull(knownWordRepo.findOneByWord(it),
-                    "Unknown word: %s", it);
+            final String wordLower = it.toLowerCase();
+            final KnownWord knownWord = Preconditions.checkNotNull(knownWordRepo.findOneByWord(wordLower),
+                    "Unknown word: %s", wordLower);
             return new ExpressiveWord(it, knownWord);
         }).collect(Collectors.toList());
     }

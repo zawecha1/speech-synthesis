@@ -22,7 +22,7 @@ public class Phoneme implements Serializable {
     public Phoneme(String sampa, short duration, Map<Byte, Short> pitches) {
         this.sampa = sampa;
         this.duration = duration;
-        this.pitches = pitches;
+        this.pitches = new LinkedHashMap<>(pitches);
     }
 
     /**
