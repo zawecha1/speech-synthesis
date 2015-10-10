@@ -7,22 +7,22 @@
       "consonant1Duration": -36,
       "consonant2Duration": 1,
       "vocalDuration": 12,
-      "pitch1": 172,
-      "pitch2": 183
+      "firstPitch": 172,
+      "lastPitch": 183
     },
     "middleSyllable": {
       "consonant1Duration": 5,
       "consonant2Duration": 3,
       "vocalDuration": 72,
-      "pitch1": 195,
-      "pitch2": 260
+      "firstPitch": 195,
+      "lastPitch": 260
     },
     "lastSyllable": {
       "consonant1Duration": -15,
       "consonant2Duration": 5,
       "vocalDuration": 136,
-      "pitch1": 244,
-      "pitch2": 237
+      "firstPitch": 244,
+      "lastPitch": 237
     }
   },
   "secondWord": {
@@ -30,29 +30,29 @@
       "consonant1Duration": -18,
       "consonant2Duration": -10,
       "vocalDuration": 77,
-      "pitch1": 192,
-      "pitch2": 232
+      "firstPitch": 192,
+      "lastPitch": 232
     },
     "middleSyllable": {
       "consonant1Duration": -41,
       "consonant2Duration": 5,
       "vocalDuration": 26,
-      "pitch1": 154,
-      "pitch2": 207
+      "firstPitch": 154,
+      "lastPitch": 207
     },
     "lastSyllable": {
       "consonant1Duration": 9,
       "consonant2Duration": -16,
       "vocalDuration": 58,
-      "pitch1": 209,
-      "pitch2": 202
+      "firstPitch": 209,
+      "lastPitch": 202
     }
   },
   "defaultWord": {
     "defaultSyllable": {
       "defaultDuration": 5,
-      "pitch1": 192,
-      "pitch2": 205
+      "firstPitch": 192,
+      "lastPitch": 205
     }
   }
 }

@@ -11,10 +11,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
-import org.lskk.lumen.core.AudioObject;
-import org.lskk.lumen.core.CommunicateAction;
-import org.lskk.lumen.core.LumenChannel;
-import org.lskk.lumen.core.LumenThing;
+import org.lskk.lumen.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -44,9 +41,14 @@ public class SpeechSynthesisRouter extends RouteBuilder {
     private ToJson toJson;
     @Inject
     private ProducerTemplate producer;
+    @Inject
+    private SpeechProsody speechProsody;
+    @Inject
+    private EmotionProsodies emotionProsodies;
 
     @Override
     public void configure() throws Exception {
+        final File mbrolaShareFolder = new File("/usr/share/mbrola");
         final String ffmpegExecutable = !new File("/usr/bin/ffmpeg").exists() && new File("/usr/bin/avconv").exists() ? "avconv" : "ffmpeg";
         log.info("libav autodetection result: We will use '{}'", ffmpegExecutable);
         from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key())
@@ -56,6 +58,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                             exchange.getIn().getBody(byte[].class), LumenThing.class);
                     if (thing instanceof CommunicateAction) {
                         final CommunicateAction communicateAction = (CommunicateAction) thing;
+                        final EmotionKind emotionKind = Optional.ofNullable(communicateAction.getEmotionKind()).orElse(EmotionKind.NEUTRAL);
                         final Locale lang = Optional.ofNullable(communicateAction.getInLanguage()).orElse(Locale.US);
                         log.info("Got speech lang-legacy={}: {}", lang.getLanguage(), communicateAction);
                         final String avatarId = Optional.ofNullable(communicateAction.getAvatarId()).orElse("nao1");
@@ -64,34 +67,59 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 //                        final File oggFile = File.createTempFile("lumen-speech-synthesis_", ".ogg");
                         try {
                             final byte[] wavBytes;
-                            try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
-                                 final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
-                                 final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
-                                final CommandLine cmdLine = new CommandLine("espeak");
-                                cmdLine.addArgument("-b");
-                                cmdLine.addArgument("1"); // UTF-8
-                                cmdLine.addArgument("-m"); // SSML markup
-                                cmdLine.addArgument("-s");
-                                cmdLine.addArgument("130");
-                                if ("in".equals(lang.getLanguage())) {
-                                    cmdLine.addArgument("-v");
-                                    cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
-                                } else if ("ar".equals(lang.getLanguage())) {
-                                    cmdLine.addArgument("-v");
-                                    cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
+                            if ("in".equals(lang.getLanguage()) && EmotionKind.NEUTRAL != emotionKind) {
+                                // Expressive speech (for now, Indonesian only)
+                                final EmotionProsody emotionProsody = emotionProsodies.getEmotion(emotionKind)
+                                        .orElseThrow(() -> new SpeechSynthesisException("Emotion " + emotionKind + " not supported"));
+                                final PhonemeDoc phonemeDoc = speechProsody.perform(communicateAction.getObject(), emotionProsody);
+
+                                try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(phonemeDoc.toString().getBytes(StandardCharsets.UTF_8));
+                                     final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
+                                     final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
+                                    final CommandLine cmdLine = new CommandLine("mbrola");
+                                    cmdLine.addArgument(new File(mbrolaShareFolder, "id1/id1").toString());
+                                    cmdLine.addArgument("-");
+                                    cmdLine.addArgument("-");
+                                    executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
+                                    final int executed;
+                                    try {
+                                        executed = executor.execute(cmdLine);
+                                        wavBytes = wavStream.toByteArray();
+                                    } finally {
+                                        log.info("{}: {}", cmdLine, err.toString());
+                                    }
                                 }
+                            } else {
+                                // Neutral speech
+                                try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
+                                     final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
+                                     final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
+                                    final CommandLine cmdLine = new CommandLine("espeak");
+                                    cmdLine.addArgument("-b");
+                                    cmdLine.addArgument("1"); // UTF-8
+                                    cmdLine.addArgument("-m"); // SSML markup
+                                    cmdLine.addArgument("-s");
+                                    cmdLine.addArgument("130");
+                                    if ("in".equals(lang.getLanguage())) {
+                                        cmdLine.addArgument("-v");
+                                        cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
+                                    } else if ("ar".equals(lang.getLanguage())) {
+                                        cmdLine.addArgument("-v");
+                                        cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
+                                    }
 //                                cmdLine.addArgument("-w");
 //                                cmdLine.addArgument(wavFile.toString());
-                                cmdLine.addArgument("--stdin");
-                                cmdLine.addArgument("--stdout");
-                                //cmdLine.addArgument(communicateAction.getObject());
-                                executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
-                                final int executed;
-                                try {
-                                    executed = executor.execute(cmdLine);
-                                    wavBytes = wavStream.toByteArray();
-                                } finally {
-                                    log.info("{}: {}", cmdLine, err.toString());
+                                    cmdLine.addArgument("--stdin");
+                                    cmdLine.addArgument("--stdout");
+                                    //cmdLine.addArgument(communicateAction.getObject());
+                                    executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
+                                    final int executed;
+                                    try {
+                                        executed = executor.execute(cmdLine);
+                                        wavBytes = wavStream.toByteArray();
+                                    } finally {
+                                        log.info("{}: {}", cmdLine, err.toString());
+                                    }
                                 }
                             }
 

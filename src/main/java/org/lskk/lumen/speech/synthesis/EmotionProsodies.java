@@ -3,6 +3,7 @@ package org.lskk.lumen.speech.synthesis;
 import org.lskk.lumen.core.EmotionKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * Created by ceefour on 07/10/2015.
  */
 @Repository
+@Profile("speechSynthesisApp")
 public class EmotionProsodies {
     private static final Logger log = LoggerFactory.getLogger(EmotionProsodies.class);
 

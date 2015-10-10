@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
@@ -25,7 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {HibernateJpaAutoConfiguration.class, LiquibaseAutoConfiguration.class,
+    DataSourceAutoConfiguration.class})
 @Profile("communicateApp")
 public class CommunicateApp implements CommandLineRunner {
 
@@ -47,6 +51,7 @@ public class CommunicateApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        log.info("Args: {}", (Object) args);
         Preconditions.checkArgument(args.length >= 1, "Usage: communicate SSML_MARKUP");
 
         final CommunicateParams params = new CommunicateParams();
@@ -79,7 +84,7 @@ public class CommunicateApp implements CommandLineRunner {
         private EmotionKind emotion;
         @Parameter(names = "-a", description = "Avatar ID, e.g. nao1")
         private String avatarId;
-        @Parameter(names = "-a", description = "Gender: MALE | FEMALE")
+        @Parameter(names = "-g", description = "Gender: MALE | FEMALE")
         private Gender gender;
         @Parameter(description = "Message to say.")
         private List<String> objects = new ArrayList<>();
