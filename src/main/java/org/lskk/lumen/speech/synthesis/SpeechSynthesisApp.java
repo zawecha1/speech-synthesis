@@ -17,6 +17,7 @@ public class SpeechSynthesisApp implements CommandLineRunner {
     public static void main(String[] args) {
         new SpringApplicationBuilder(SpeechSynthesisApp.class)
                 .profiles("speechSynthesisApp")
+                .web(false)
                 .run(args);
     }
 
