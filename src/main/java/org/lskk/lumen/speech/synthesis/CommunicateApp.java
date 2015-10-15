@@ -6,10 +6,7 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
-import org.lskk.lumen.core.CommunicateAction;
-import org.lskk.lumen.core.EmotionKind;
-import org.lskk.lumen.core.Gender;
-import org.lskk.lumen.core.LumenChannel;
+import org.lskk.lumen.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -71,7 +68,9 @@ public class CommunicateApp implements CommandLineRunner {
         }
         final String speechSynthesisUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key();
         log.info("Sending {} to {} ...", communicateAction, speechSynthesisUri);
-        producer.sendBody(speechSynthesisUri, toJson.mapper.writeValueAsBytes(communicateAction));
+        final byte[] resultJson = producer.requestBody(speechSynthesisUri, toJson.mapper.writeValueAsBytes(communicateAction), byte[].class);
+        final Status status = toJson.getMapper().readValue(resultJson, Status.class);
+        log.info("Status: {}", status);
         SpringApplication.exit(appCtx);
     }
 

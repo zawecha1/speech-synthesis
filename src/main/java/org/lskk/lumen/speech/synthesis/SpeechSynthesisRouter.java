@@ -1,17 +1,15 @@
 package org.lskk.lumen.speech.synthesis;
 
-import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.LoggingErrorHandlerBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.language.HeaderExpression;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import org.lskk.lumen.core.*;
+import org.lskk.lumen.core.util.AsError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -22,7 +20,6 @@ import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
@@ -40,6 +37,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
     @Inject
     private ToJson toJson;
     @Inject
+    private AsError asError;
+    @Inject
     private ProducerTemplate producer;
     @Inject
     private SpeechProsody speechProsody;
@@ -48,6 +47,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        onException(Exception.class).bean(asError).bean(toJson).handled(true);
+        errorHandler(new LoggingErrorHandlerBuilder(log));
         final File LINUX_MBROLA_SHARE_FOLDER = new File("/usr/share/mbrola");
         final File mbrolaShareFolder = LINUX_MBROLA_SHARE_FOLDER.exists() ? LINUX_MBROLA_SHARE_FOLDER : new File("C:/mbroladb");
         final String ffmpegExecutable = !new File("/usr/bin/ffmpeg").exists() && new File("/usr/bin/avconv").exists() ? "avconv" : "ffmpeg";
@@ -181,19 +182,21 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                         }
 
                         // reply
-                        exchange.getOut().setBody("{}");
-                        final String replyTo = exchange.getIn().getHeader("rabbitmq.REPLY_TO", String.class);
-                        if (replyTo != null) {
-                            log.debug("Sending reply to {} ...", replyTo);
-                            exchange.getOut().setHeader("rabbitmq.ROUTING_KEY", replyTo);
-                            exchange.getOut().setHeader("rabbitmq.EXCHANGE_NAME", "");
-                            exchange.getOut().setHeader("recipients",
-                                    "rabbitmq://dummy/dummy?connectionFactory=#amqpConnFactory&autoDelete=false,log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
-                        } else {
-                            exchange.getOut().setHeader("recipients", "log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
-                        }
+                        log.trace("Exchange {} is {}", exchange.getIn().getMessageId(), exchange.getPattern());
+                        exchange.getIn().setBody(new Status());
+//                        final String replyTo = exchange.getIn().getHeader("rabbitmq.REPLY_TO", String.class);
+//                        if (replyTo != null) {
+//                            log.debug("Sending reply to {} ...", replyTo);
+//                            exchange.getOut().setHeader("rabbitmq.ROUTING_KEY", replyTo);
+//                            exchange.getOut().setHeader("rabbitmq.EXCHANGE_NAME", "");
+//                            exchange.getOut().setHeader("recipients",
+//                                    "rabbitmq://dummy/dummy?connectionFactory=#amqpConnFactory&autoDelete=false,log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
+//                        } else {
+//                            exchange.getOut().setHeader("recipients");
+//                        }
                     }
                 })
-                .routingSlip(new HeaderExpression("recipients"));
+                .bean(toJson);
+                //.to("log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
     }
 }
