@@ -13,8 +13,9 @@ Text-to-Speech handler for Lumen Robot Friend with expressive intonation support
 4. Download **id1: Indonesian Male (4Mb) Arry Arman** dari http://tcts.fpms.ac.be/synthesis/,
     extract lalu copy folder `id1-001010`  ke dalam folder `C:\mbroladb`
 5. Copy file `id1` (dalam folder `id1-001010`) ke dalam `C:\Program Files (x86)\eSpeak\espeak-data\mbrola`
-6. Tambahkan ke environment `PATH`:
-    `C:\mbrola;C:\Program Files (x86)\eSpeak\command_line`
+6. Download [ffmpeg for Windows](http://www.ffmpeg.org/download.html#build-windows), extract ke `C:\ffmpeg`.
+6. Tambahkan MBROLA, eSpeak, dan ffmpeg ke environment `PATH`, contoh:
+    `C:\mbrola;C:\Program Files (x86)\eSpeak\command_line;C:\ffmpeg\bin`
 7. Test: Jalankan Command Prompt, lalu pastikan perintah berikut menghasilkan output (bukan "not recognized as command"):
 
     mbrola
