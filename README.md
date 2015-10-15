@@ -2,24 +2,25 @@
 
 Text-to-Speech handler for Lumen Robot Friend with expressive intonation support.
 
-## eSpeak
-
-Setelah install eSpeak, tambahkan `C:\Program Files (x86)\eSpeak\command_line` ke environment `PATH`.
-
-Test: Jalankan Command Prompt, lalu pastikan perintah berikut berhasil:
-
-    espeak "Hello world"
-    espeak -v mb-id1 "Apa kabar?"
+## MBROLA dan eSpeak
 
 ## Langkah2 Install TTS Salita
 
 1. Buat folder `C:\mbroladb`
-2. Install [MBROLA Tools](http://tcts.fpms.ac.be/synthesis/mbrola.html).
+2. Download [MBROLA for PC/DOS](http://tcts.fpms.ac.be/synthesis/mbrola.html), dan extract ke `C:\mbrola`.
 3. Install [eSpeak](http://espeak.sourceforge.net/).
-    **Penting:** pada waktu install eSpeak tulis `mb-id1` pada voice name.
+    **Penting:** pada waktu install eSpeak tulis `mb-id1` pada voice name yang kosong.
 4. Download **id1: Indonesian Male (4Mb) Arry Arman** dari http://tcts.fpms.ac.be/synthesis/,
     extract lalu copy folder `id1-001010`  ke dalam folder `C:\mbroladb`
 5. Copy file `id1` (dalam folder `id1-001010`) ke dalam `C:\Program Files (x86)\eSpeak\espeak-data\mbrola`
+6. Tambahkan ke environment `PATH`:
+    `C:\mbrola;C:\Program Files (x86)\eSpeak\command_line`
+7. Test: Jalankan Command Prompt, lalu pastikan perintah berikut menghasilkan output (bukan "not recognized as command"):
+
+    mbrola
+    espeak "Hello world"
+    espeak -v mb-id1 "Apa kabar?"
+
 
 ## Arabic
 

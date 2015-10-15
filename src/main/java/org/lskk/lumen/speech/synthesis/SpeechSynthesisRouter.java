@@ -48,7 +48,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        final File mbrolaShareFolder = new File("/usr/share/mbrola");
+        final File LINUX_MBROLA_SHARE_FOLDER = new File("/usr/share/mbrola");
+        final File mbrolaShareFolder = LINUX_MBROLA_SHARE_FOLDER.exists() ? LINUX_MBROLA_SHARE_FOLDER : new File("C:/mbroladb");
         final String ffmpegExecutable = !new File("/usr/bin/ffmpeg").exists() && new File("/usr/bin/avconv").exists() ? "avconv" : "ffmpeg";
         log.info("libav autodetection result: We will use '{}'", ffmpegExecutable);
         from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key())
