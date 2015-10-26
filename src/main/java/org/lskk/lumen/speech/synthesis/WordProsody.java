@@ -1,4 +1,4 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import java.io.Serializable;
 

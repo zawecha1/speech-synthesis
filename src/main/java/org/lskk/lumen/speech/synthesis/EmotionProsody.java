@@ -1,10 +1,9 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.lskk.lumen.core.*;
 
 import java.io.Serializable;
 

@@ -5,7 +5,7 @@
     <logger name="com.soluvas" level="DEBUG"/>
     <logger name="id" level="DEBUG"/>
     <logger name="org.lskk" level="DEBUG"/>
-    <logger name="org.apache.camel" level="INFO"/>
+    <logger name="org.apache.camel.component" level="DEBUG"/>
     <logger name="org.apache.http.impl" level="DEBUG"/>
     <logger name="org.apache.http.headers" level="DEBUG"/>
     <!--<logger name="org.apache.http.wire" level="DEBUG"/>-->

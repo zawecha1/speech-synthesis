@@ -1,8 +1,9 @@
-package org.lskk.lumen.speech.expression;
+package org.lskk.lumen.speech.synthesis;
 
 import org.lskk.lumen.core.EmotionKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * Created by ceefour on 07/10/2015.
  */
 @Repository
+@Profile("speechSynthesisApp")
 public class EmotionProsodies {
     private static final Logger log = LoggerFactory.getLogger(EmotionProsodies.class);
 
@@ -29,7 +31,7 @@ public class EmotionProsodies {
     @PostConstruct
     public void init() throws IOException {
         final Resource[] resources = new PathMatchingResourcePatternResolver(EmotionProsodies.class.getClassLoader())
-                .getResources("classpath:org/lskk/lumen/speech/expression/*.jsonld");
+                .getResources("classpath:org/lskk/lumen/speech/synthesis/*.json");
         for (Resource res : resources) {
             final EmotionProsody emotionProsody = toJson.getMapper().readValue(res.getURL(), EmotionProsody.class);
             final EmotionKind emotionKind = EmotionKind.valueOf(emotionProsody.getId().toUpperCase());

@@ -8,7 +8,7 @@
 	<version>2.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Lumen Speech Expression</name>
+	<name>Lumen Speech Synthesis</name>
 	<description>Text-to-Speech handler for Lumen Robot Friend with expressive intonation support</description>
 
 	<parent>
@@ -20,7 +20,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<start-class>org.lskk.lumen.speech.expression.SpeechExpressionApp</start-class>
+		<start-class>org.lskk.lumen.speech.synthesis.SpeechSynthesisApp</start-class>
 		<java.version>1.8</java.version>
 	</properties>
 
@@ -95,12 +95,12 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-spring-boot</artifactId>
-			<version>2.15.3</version>
+			<version>2.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-rabbitmq</artifactId>
-			<version>2.15.3</version>
+			<version>2.16.0</version>
 		</dependency>
 
 		<dependency>
@@ -131,12 +131,27 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.189</version>
+		</dependency>
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>3.4.1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
 		<dependency>
@@ -175,6 +190,34 @@
 	</distributionManagement>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
