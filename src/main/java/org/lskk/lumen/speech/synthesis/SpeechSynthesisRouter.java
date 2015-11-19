@@ -144,6 +144,9 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                 cmdLine.addArgument("1");
                                 cmdLine.addArgument("-f");
                                 cmdLine.addArgument("ogg");
+                                // without this you'll get FLAC instead, which browsers do not support
+                                cmdLine.addArgument("-acodec");
+                                cmdLine.addArgument("vorbis");
 //                                cmdLine.addArgument("-y"); // happens, weird!
 //                                cmdLine.addArgument(oggFile.toString());
                                 cmdLine.addArgument("-");
