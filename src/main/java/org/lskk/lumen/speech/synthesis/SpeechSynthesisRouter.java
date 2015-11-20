@@ -166,6 +166,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                 final String audioContentType = "audio/ogg";
 
                                 final AudioObject audioObject = new AudioObject();
+                                audioObject.setTranscript(communicateAction.getObject());
+                                audioObject.setInLanguage(lang);
                                 audioObject.setContentType(audioContentType + "; rate=" + SAMPLE_RATE);
                                 audioObject.setContentUrl("data:" + audioContentType + ";base64," + Base64.encodeBase64String(audioContent));
                                 audioObject.setContentSize((long) audioContent.length);
