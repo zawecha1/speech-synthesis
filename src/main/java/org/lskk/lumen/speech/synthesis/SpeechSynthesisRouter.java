@@ -53,7 +53,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
         final File mbrolaShareFolder = LINUX_MBROLA_SHARE_FOLDER.exists() ? LINUX_MBROLA_SHARE_FOLDER : new File("C:/mbroladb");
         final String ffmpegExecutable = !new File("/usr/bin/ffmpeg").exists() && new File("/usr/bin/avconv").exists() ? "avconv" : "ffmpeg";
         log.info("libav autodetection result: We will use '{}'", ffmpegExecutable);
-        from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key())
+        from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&queue=" + LumenChannel.SPEECH_SYNTHESIS.key() + "&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key())
                 .to("log:IN." + LumenChannel.SPEECH_SYNTHESIS.key() + "?showHeaders=true&showAll=true&multiline=true")
                 .process(exchange -> {
                     final LumenThing thing = toJson.getMapper().readValue(
@@ -178,7 +178,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                                 audioObject.setDatePublished(audioObject.getDateCreated());
                                 audioObject.setDateModified(audioObject.getDateCreated());
                                 audioObject.setUploadDate(audioObject.getDateCreated());
-                                final String audioOutUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=avatar." + avatarId + ".audio.out";
+                                final String audioOutUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&skipQueueDeclare=true&routingKey=" + AvatarChannel.AUDIO_OUT.key(avatarId);
                                 log.info("Sending {} to {} ...", audioObject, audioOutUri);
                                 producer.sendBody(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject));
                             }
