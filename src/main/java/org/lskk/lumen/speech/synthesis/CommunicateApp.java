@@ -66,7 +66,7 @@ public class CommunicateApp implements CommandLineRunner {
             //" اَلسَّلَامُ عَلَيْكُمْ"
             communicateAction.setObject(" اَلسَّلَامُ عَلَيْكُمْ");
         }
-        final String speechSynthesisUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key();
+        final String speechSynthesisUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&skipQueueDeclare=true&routingKey=" + LumenChannel.SPEECH_SYNTHESIS.key();
         log.info("Sending {} to {} ...", communicateAction, speechSynthesisUri);
         final byte[] resultJson = producer.requestBody(speechSynthesisUri, toJson.mapper.writeValueAsBytes(communicateAction), byte[].class);
         final Status status = toJson.getMapper().readValue(resultJson, Status.class);
