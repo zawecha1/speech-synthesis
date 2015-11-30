@@ -229,7 +229,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                 //.to("log:OUT." + LumenChannel.SPEECH_SYNTHESIS);
         // avatar.*.chat.outbox
         from("rabbitmq://localhost/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&queue=speech-synthesis:" + AvatarChannel.CHAT_OUTBOX.wildcard() + "&routingKey=" + AvatarChannel.CHAT_OUTBOX.wildcard())
-                .to("log:" + SpeechSynthesisRouter.class.getName() + "." + AvatarChannel.CHAT_OUTBOX.wildcard() + "?level=DEBUG&showHeaders=true&showAll=true&multiline=true")
+                .to("log:" + SpeechSynthesisRouter.class.getName() + "." + AvatarChannel.CHAT_OUTBOX.wildcard() + "?level=DEBUG&showHeaders=true&showAll=true&showBody=false&multiline=true")
                 .process(exchange -> {
                     final String avatarId = AvatarChannel.getAvatarId((String) exchange.getIn().getHeader(RabbitMQConstants.ROUTING_KEY));
                     final LumenThing thing = toJson.getMapper().readValue(
