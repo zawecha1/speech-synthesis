@@ -40,7 +40,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
     /**
      * id1 voice is quieter than default English
      */
-    public static final int INDONESIAN_AMPLITUDE = 150;
+    public static final int INDONESIAN_AMPLITUDE = 180;
 
     private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     private static final DefaultExecutor executor = new DefaultExecutor();
