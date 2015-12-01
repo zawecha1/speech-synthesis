@@ -36,6 +36,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 
     public static final int SAMPLE_RATE = 16000;
     public static final Duration MESSAGE_EXPIRATION = Duration.standardMinutes(1);
+    public static final Locale INDONESIAN = Locale.forLanguageTag("id-ID");
 
     private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     private static final DefaultExecutor executor = new DefaultExecutor();
@@ -73,64 +74,56 @@ public class SpeechSynthesisRouter extends RouteBuilder {
         //final File wavFile = File.createTempFile("lumen-speech-synthesis_", ".wav");
 //                        final File oggFile = File.createTempFile("lumen-speech-synthesis_", ".ogg");
         try {
-            final byte[] wavBytes;
-            if ("in".equals(lang.getLanguage())) {
+            byte[] wavBytes = null;
+            if (INDONESIAN.getLanguage().equals(lang.getLanguage())) {
                 // Expressive speech (for now, Indonesian only)
-                final PhonemeDoc phonemeDoc;
-                if (EmotionKind.NEUTRAL == emotionKind) {
-                    phonemeDoc = speechProsody.performNeutral(communicateAction.getObject());
-                } else {
-                    final EmotionProsody emotionProsody = emotionProsodies.getEmotion(emotionKind)
-                            .orElseThrow(() -> new SpeechSynthesisException("Emotion " + emotionKind + " not supported"));
-                    phonemeDoc = speechProsody.perform(communicateAction.getObject(), emotionProsody);
-                }
+                try {
+                    PhonemeDoc phonemeDoc;
+                    if (EmotionKind.NEUTRAL == emotionKind) {
+                        phonemeDoc = speechProsody.performNeutral(communicateAction.getObject());
+                    } else {
+                        try {
+                            final EmotionProsody emotionProsody = emotionProsodies.getEmotion(emotionKind)
+                                    .orElseThrow(() -> new SpeechSynthesisException("Emotion " + emotionKind + " not supported"));
+                            phonemeDoc = speechProsody.perform(communicateAction.getObject(), emotionProsody);
+                        } catch (Exception e) {
+                            log.error("Cannot speak with emotion " + emotionKind + ", falling back to NEUTRAL: " + communicateAction.getObject(), e);
+                            phonemeDoc = speechProsody.performNeutral(communicateAction.getObject());
+                        }
+                    }
 
-                try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(phonemeDoc.toString().getBytes(StandardCharsets.UTF_8));
-                     final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
-                     final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
-                    final CommandLine cmdLine = new CommandLine("mbrola");
-                    cmdLine.addArgument(new File(mbrolaShareFolder, "id1/id1").toString());
-                    cmdLine.addArgument("-");
-                    cmdLine.addArgument("-.wav");
-                    executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
-                    final int executed;
-                    try {
-                        executed = executor.execute(cmdLine);
-                        wavBytes = wavStream.toByteArray();
-                    } finally {
-                        log.info("{}: {}", cmdLine, err.toString());
+                    try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(phonemeDoc.toString().getBytes(StandardCharsets.UTF_8));
+                         final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
+                         final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
+                        final CommandLine cmdLine = new CommandLine("mbrola");
+                        cmdLine.addArgument(new File(mbrolaShareFolder, "id1/id1").toString());
+                        cmdLine.addArgument("-");
+                        cmdLine.addArgument("-.wav");
+                        executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
+                        final int executed;
+                        try {
+                            executed = executor.execute(cmdLine);
+                            wavBytes = wavStream.toByteArray();
+                        } finally {
+                            log.info("{}: {}", cmdLine, err.toString());
+                        }
                     }
+                } catch (Exception e) {
+                    log.error("Cannot speak Indonesian using prosody engine, falling back to direct espeak: " + communicateAction.getObject(), e);
                 }
-            } else {
-                // Neutral speech
-                try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
-                     final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
-                     final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
-                    final CommandLine cmdLine = new CommandLine("espeak");
-                    cmdLine.addArgument("-b");
-                    cmdLine.addArgument("1"); // UTF-8
-                    cmdLine.addArgument("-m"); // SSML markup
-                    cmdLine.addArgument("-s");
-                    cmdLine.addArgument("130");
-                    if ("in".equals(lang.getLanguage())) {
-                        cmdLine.addArgument("-v");
-                        cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
-                    } else if ("ar".equals(lang.getLanguage())) {
-                        cmdLine.addArgument("-v");
-                        cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
-                    }
-//                                cmdLine.addArgument("-w");
-//                                cmdLine.addArgument(wavFile.toString());
-                    cmdLine.addArgument("--stdin");
-                    cmdLine.addArgument("--stdout");
-                    //cmdLine.addArgument(communicateAction.getObject());
-                    executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
-                    final int executed;
-                    try {
-                        executed = executor.execute(cmdLine);
-                        wavBytes = wavStream.toByteArray();
-                    } finally {
-                        log.info("{}: {}", cmdLine, err.toString());
+            }
+            if (wavBytes == null) {
+                // Neutral speech using direct espeak
+                try {
+                    wavBytes = performEspeak(communicateAction, lang);
+                } catch (Exception e) {
+                    if (!Locale.US.getLanguage().equals(lang.getLanguage())) {
+                        // Indonesian sometimes fails especially "k-k", e.g. "baik koq".
+                        // retry using English as last resort, as long as it says something!
+                        log.error("Cannot speak using " + lang.toLanguageTag() + ", falling back to English (US): " + communicateAction.getObject(), e);
+                        wavBytes = performEspeak(communicateAction, Locale.US);
+                    } else {
+                        throw e;
                     }
                 }
             }
@@ -208,6 +201,44 @@ public class SpeechSynthesisRouter extends RouteBuilder {
 //                        } else {
 //                            exchange.getOut().setHeader("recipients");
 //                        }
+    }
+
+    protected byte[] performEspeak(CommunicateAction communicateAction, Locale lang) throws IOException {
+        byte[] wavBytes;
+        try (final ByteArrayInputStream objectIn = new ByteArrayInputStream(communicateAction.getObject().getBytes(StandardCharsets.UTF_8));
+             final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
+             final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
+            final CommandLine cmdLine = new CommandLine("espeak");
+            cmdLine.addArgument("-b");
+            cmdLine.addArgument("1"); // UTF-8
+            cmdLine.addArgument("-m"); // SSML markup
+            cmdLine.addArgument("-s");
+            cmdLine.addArgument("130");
+            if (INDONESIAN.getLanguage().equals(lang.getLanguage())) {
+                cmdLine.addArgument("-v");
+                cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
+                // id1 voice is quieter than default English
+                cmdLine.addArgument("-a");
+                cmdLine.addArgument("150");
+            } else if ("ar".equals(lang.getLanguage())) {
+                cmdLine.addArgument("-v");
+                cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
+            }
+//                                cmdLine.addArgument("-w");
+//                                cmdLine.addArgument(wavFile.toString());
+            cmdLine.addArgument("--stdin");
+            cmdLine.addArgument("--stdout");
+            //cmdLine.addArgument(communicateAction.getObject());
+            executor.setStreamHandler(new PumpStreamHandler(wavStream, err, objectIn));
+            final int executed;
+            try {
+                executed = executor.execute(cmdLine);
+                wavBytes = wavStream.toByteArray();
+            } finally {
+                log.info("{}: {}", cmdLine, err.toString());
+            }
+        }
+        return wavBytes;
     }
 
     @Override
