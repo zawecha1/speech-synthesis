@@ -37,6 +37,10 @@ public class SpeechSynthesisRouter extends RouteBuilder {
     public static final int SAMPLE_RATE = 16000;
     public static final Duration MESSAGE_EXPIRATION = Duration.standardMinutes(1);
     public static final Locale INDONESIAN = Locale.forLanguageTag("id-ID");
+    /**
+     * id1 voice is quieter than default English
+     */
+    public static final int INDONESIAN_AMPLITUDE = 150;
 
     private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     private static final DefaultExecutor executor = new DefaultExecutor();
@@ -96,6 +100,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                          final ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
                          final ByteArrayOutputStream err = new ByteArrayOutputStream()) {
                         final CommandLine cmdLine = new CommandLine("mbrola");
+                        cmdLine.addArgument("-v");
+                        cmdLine.addArgument(String.valueOf(INDONESIAN_AMPLITUDE / 100f));
                         cmdLine.addArgument(new File(mbrolaShareFolder, "id1/id1").toString());
                         cmdLine.addArgument("-");
                         cmdLine.addArgument("-.wav");
@@ -217,9 +223,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
             if (INDONESIAN.getLanguage().equals(lang.getLanguage())) {
                 cmdLine.addArgument("-v");
                 cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
-                // id1 voice is quieter than default English
                 cmdLine.addArgument("-a");
-                cmdLine.addArgument(String.valueOf(SpeechProsody.INDONESIAN_AMPLITUDE));
+                cmdLine.addArgument(String.valueOf(INDONESIAN_AMPLITUDE));
             } else if ("ar".equals(lang.getLanguage())) {
                 cmdLine.addArgument("-v");
                 cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);

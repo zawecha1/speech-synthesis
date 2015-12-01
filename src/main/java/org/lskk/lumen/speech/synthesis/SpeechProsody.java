@@ -32,10 +32,6 @@ public class SpeechProsody {
     public static final String MBROLA_ID1_VOICE = "mb-id1";
     public static final String MBROLA_AR1_VOICE = "mb-ar1";
     public static final Set<String> VOCALS = ImmutableSet.of("V", "e", "@", "I", "Q", "U", "aI", "OI", "aU");
-    /**
-     * id1 voice is quieter than default English
-     */
-    public static final int INDONESIAN_AMPLITUDE = 150;
 
     private static final Logger log = LoggerFactory.getLogger(SpeechProsody.class);
     private static final DefaultExecutor executor = new DefaultExecutor();
@@ -99,8 +95,6 @@ public class SpeechProsody {
             cmdLine.addArgument("-m"); // SSML markup
             cmdLine.addArgument("-s");
             cmdLine.addArgument("130");
-            cmdLine.addArgument("-a");
-            cmdLine.addArgument(String.valueOf(INDONESIAN_AMPLITUDE));
             cmdLine.addArgument("-v");
             cmdLine.addArgument(voiceId);
             cmdLine.addArgument("-q");
