@@ -219,7 +219,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                 cmdLine.addArgument(SpeechProsody.MBROLA_ID1_VOICE);
                 // id1 voice is quieter than default English
                 cmdLine.addArgument("-a");
-                cmdLine.addArgument("150");
+                cmdLine.addArgument(String.valueOf(SpeechProsody.INDONESIAN_AMPLITUDE));
             } else if ("ar".equals(lang.getLanguage())) {
                 cmdLine.addArgument("-v");
                 cmdLine.addArgument(SpeechProsody.MBROLA_AR1_VOICE);
