@@ -11,6 +11,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.lskk.lumen.core.*;
 import org.lskk.lumen.core.util.AsError;
 import org.slf4j.Logger;
@@ -33,8 +34,10 @@ import java.util.Optional;
 @Profile("speechSynthesisApp")
 public class SpeechSynthesisRouter extends RouteBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     public static final int SAMPLE_RATE = 16000;
+    public static final Duration MESSAGE_EXPIRATION = Duration.standardMinutes(1);
+
+    private static final Logger log = LoggerFactory.getLogger(SpeechSynthesisRouter.class);
     private static final DefaultExecutor executor = new DefaultExecutor();
     private static final File LINUX_MBROLA_SHARE_FOLDER = new File("/usr/share/mbrola");
     private static final File mbrolaShareFolder = LINUX_MBROLA_SHARE_FOLDER.exists() ? LINUX_MBROLA_SHARE_FOLDER : new File("C:/mbroladb");
@@ -182,7 +185,8 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                 audioObject.setUploadDate(audioObject.getDateCreated());
                 final String audioOutUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&skipQueueDeclare=true&routingKey=" + AvatarChannel.AUDIO_OUT.key(avatarId);
                 log.info("Sending {} to {} ...", audioObject, audioOutUri);
-                producer.sendBody(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject));
+                producer.sendBodyAndHeader(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject),
+                        RabbitMQConstants.EXPIRATION, String.valueOf(MESSAGE_EXPIRATION.getMillis()));
             }
         } finally {
 //                            oggFile.delete();
