@@ -7,6 +7,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.apache.camel.ProducerTemplate;
 import org.lskk.lumen.core.*;
+import org.lskk.lumen.core.util.ToJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
