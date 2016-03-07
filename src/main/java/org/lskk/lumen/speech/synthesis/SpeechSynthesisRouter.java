@@ -185,7 +185,7 @@ public class SpeechSynthesisRouter extends RouteBuilder {
                 audioObject.setUploadDate(audioObject.getDateCreated());
                 final String audioOutUri = "rabbitmq://dummy/amq.topic?connectionFactory=#amqpConnFactory&exchangeType=topic&autoDelete=false&skipQueueDeclare=true&routingKey=" + AvatarChannel.AUDIO_OUT.key(avatarId);
                 log.info("Sending {} to {} ...", audioObject, audioOutUri);
-                producer.sendBodyAndHeader(audioOutUri, toJson.mapper.writeValueAsBytes(audioObject),
+                producer.sendBodyAndHeader(audioOutUri, toJson.getMapper().writeValueAsBytes(audioObject),
                         RabbitMQConstants.EXPIRATION, String.valueOf(MESSAGE_EXPIRATION.getMillis()));
             }
         } finally {
