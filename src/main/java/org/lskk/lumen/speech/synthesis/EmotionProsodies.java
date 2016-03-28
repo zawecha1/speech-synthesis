@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * kelas untuk memanagement emotion prosody yang ada
  * Created by ceefour on 07/10/2015.
  */
 @Repository
