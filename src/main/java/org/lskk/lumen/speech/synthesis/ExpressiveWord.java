@@ -5,6 +5,7 @@ import org.lskk.lumen.speech.synthesis.jpa.KnownWord;
 import java.io.Serializable;
 
 /**
+ * merepresentasikan sebuah kata yang memiliki informasi ekspresi
  * Created by ceefour on 10/8/15.
  */
 public class ExpressiveWord implements Serializable {

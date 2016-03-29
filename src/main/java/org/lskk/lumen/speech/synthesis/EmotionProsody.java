@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 
 /**
+ * gaya bicara yang sesuai dengan emosi
  * Created by ceefour on 07/10/2015.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)

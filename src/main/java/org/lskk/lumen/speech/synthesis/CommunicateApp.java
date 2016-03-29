@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+/**
+ * aplikasi untuk tes speech synthesis
+ */
 @SpringBootApplication(exclude = {HibernateJpaAutoConfiguration.class, LiquibaseAutoConfiguration.class,
     DataSourceAutoConfiguration.class})
 @Profile("communicateApp")
