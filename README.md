@@ -7,25 +7,28 @@ Text-to-Speech handler for Lumen Robot Friend with expressive intonation support
 ## Langkah2 Install TTS Salita
 
 1. Buat folder `C:\mbroladb`
-2. Download [MBROLA for PC/DOS](http://tcts.fpms.ac.be/synthesis/mbrola.html), dan extract ke `C:\mbrola`.
+2. Download [MBROLA for PC/DOS](http://tcts.fpms.ac.be/synthesis/mbrola/bin/pcdos/mbr301d.zip), dan extract ke `C:\mbrola`. Sumber: http://tcts.fpms.ac.be/synthesis/mbrola.html
 3. Install [eSpeak](http://espeak.sourceforge.net/).
     **Penting:** pada waktu install eSpeak tulis `mb-id1` pada salah satu voice name yang kosong.
-4. Download **id1: Indonesian Male (4Mb) Arry Arman** dari http://tcts.fpms.ac.be/synthesis/mbrola/mbrcopybin.html,
+4. Install [MbrolaTools35.exe](http://www.tcts.fpms.ac.be/synthesis/mbrola/bin/pcwin/MbrolaTools35.exe)
+5. Download **id1: Indonesian Male (4Mb) Arry Arman** dari http://tcts.fpms.ac.be/synthesis/mbrola/mbrcopybin.html,
     extract lalu copy folder `id1-001010`  ke dalam folder `C:\mbroladb`
-5. Copy file `id1` (dalam folder `id1-001010`) ke dalam `C:\Program Files (x86)\eSpeak\espeak-data\mbrola`
-6. Download [ffmpeg for Windows](https://ffmpeg.zeranoe.com/builds/), extract ke `D:\` lalu rename foldernya menjadi
+6. Copy file `id1` (**file** di dalam folder `id1-001010`, bukan foldernya itu sendiri) ke dalam `C:\Program Files (x86)\eSpeak\espeak-data\mbrola`
+7. Download [ffmpeg for Windows](https://ffmpeg.zeranoe.com/builds/), extract ke `D:\` lalu rename foldernya menjadi
     `ffmpeg`, di dalam folder `ffmpeg` sudah harus ada hasil ekstrak(`D:\ffmpeg`).
-7. Tambahkan MBROLA, eSpeak, dan ffmpeg ke environment `PATH`, contoh:
+8. Tambahkan MBROLA, eSpeak, dan ffmpeg ke environment `PATH`, contoh:
     `C:\mbrola;C:\Program Files (x86)\eSpeak\command_line;D:\ffmpeg\bin`
-8. Test: Jalankan Command Prompt (harus dibuka baru, tidak boleh yang sudah jalan), lalu pastikan perintah berikut menghasilkan output (bukan "not recognized as command"):
+9. Test: Jalankan Command Prompt (harus dibuka baru, tidak boleh yang sudah jalan), lalu pastikan perintah berikut menghasilkan output (bukan "not recognized as command"):
 
         mbrola
         espeak "Hello world"
         espeak -v mb-id1 "Apa kabar?"
     
-9. Klik `speech-synthesis`, pilih src>main>java, klik kanan di `SpeechSynthesisApp`, pilih create'specch synthesis'
+    Bila muncul `Can't load mbrola.dll. mbrola voice not found`, artinya Mbrola Tools berlum diinstall.
+
+10. Klik `speech-synthesis`, pilih src>main>java, klik kanan di `SpeechSynthesisApp`, pilih create'specch synthesis'
 pada bagian working directory isi `$MODULE_DIR$`, ceklis "Single Instance Only"
-10.  Klik `speech-synthesis`, pilih src>main>java, klik kanan di `SpeechSynthesisApp` pilih run    
+11.  Klik `speech-synthesis`, pilih src>main>java, klik kanan di `SpeechSynthesisApp` pilih run    
 
 
 ## Arabic
