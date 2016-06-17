@@ -10,7 +10,7 @@ Text-to-Speech handler for Lumen Robot Friend with expressive intonation support
 2. Download [MBROLA for PC/DOS](http://tcts.fpms.ac.be/synthesis/mbrola/bin/pcdos/mbr301d.zip), dan extract ke `C:\mbrola`. Sumber: http://tcts.fpms.ac.be/synthesis/mbrola.html
 3. Install [eSpeak](http://espeak.sourceforge.net/).
     **Penting:** pada waktu install eSpeak tulis `mb-id1` pada salah satu voice name yang kosong.
-4. Install [MbrolaTools35.exe](http://www.tcts.fpms.ac.be/synthesis/mbrola/bin/pcwin/MbrolaTools35.exe)
+4. Install [MbrolaTools35.exe](http://www.tcts.fpms.ac.be/synthesis/mbrola/bin/pcwin/MbrolaTools35.exe). eSpeak for Windows membutuhkannya untuk dapat memanggil MBROLA.
 5. Download **id1: Indonesian Male (4Mb) Arry Arman** dari http://tcts.fpms.ac.be/synthesis/mbrola/mbrcopybin.html,
     extract lalu copy folder `id1-001010`  ke dalam folder `C:\mbroladb`
 6. Copy file `id1` (**file** di dalam folder `id1-001010`, bukan foldernya itu sendiri) ke dalam `C:\Program Files (x86)\eSpeak\espeak-data\mbrola`
